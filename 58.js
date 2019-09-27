@@ -4,7 +4,7 @@ const EstateModel = require('./models/estateSchema')
 const db = mongoose.connect('mongodb://localhost:27017/estateInfo')
 const area = '芙蓉区'
 const infoSource = '58同城'
-const requstUrl = 'https://cs.58.com/furong/zhaozu/?key=%E5%86%99%E5%AD%97%E6%A5%BC&cmcskey=%E5%86%99%E5%AD%97%E6%A5%BC&final=1&specialtype=gls&classpolicy=main_A,house_A,job_A,service_A,car_A,sale_A'
+const requstUrl = 'https://cs.58.com/furong/zhaozu'
 const startPage = 1
 const endPage = 10
 
@@ -35,26 +35,25 @@ const openOnePage = async (url) => {
   await page.goto(url);
   console.log('enter');
 
-  // await getOnePageInfo(page)
+  await getOnePageInfo(page)
   // // 关闭浏览器
   // await browser.close();
 };
 
 const getOnePageInfo = async (page) => {
-  // await page.waitForSelector('.list-content');
-  // let urls = await page.$eval('.list-content', element => {
-  //   let HTMLCollection = element.querySelectorAll('a.list-item');
-  //   let urlsArray = Array.prototype.slice.call(HTMLCollection);
-  //   let links = urlsArray.map(item => {
-  //     return item.getAttribute('href')
-  //   });
-  //   return links;
-  // })
-  // for (let i in urls) {
-  //   await getEstateInfo(urls[i]);
-  //   await sleep(randNum(3, 10))
-  // }
-  await sleep(8)
+  await page.waitForSelector('#house-list-wrap');
+  let urls = await page.$eval('#house-list-wrap', element => {
+    let HTMLCollection = element.querySelectorAll('li > h2 > a');
+    let urlsArray = Array.prototype.slice.call(HTMLCollection);
+    let links = urlsArray.map(item => {
+      return item.getAttribute('href')
+    });
+    return links;
+  })
+  for (let i in urls) {
+    await getEstateInfo(urls[i]);
+    await sleep(randNum(3, 10))
+  }
   page.click('.next')
   getOnePageInfo(page)
 }
@@ -63,7 +62,7 @@ const getEstateInfo = async (url) => {
   // 启动浏览器
   const browser = await puppeteer.launch({
     // 关闭无头模式，方便我们看到这个无头浏览器执行的过程
-    // headless: false,
+    headless: false,
   });
   const estatePage = await browser.newPage();
   // 设置浏览器视窗
@@ -73,11 +72,11 @@ const getEstateInfo = async (url) => {
   });
   // 地址栏输入网页地址
   await estatePage.goto(url);
-  await estatePage.waitForSelector('.basicinfo-wrapper');
-  let estateInfo = await estatePage.$eval('.basicinfo-wrapper', element => {
-    let name = element.querySelector('.name').innerText
-    let company = element.querySelector('.company a').innerText
-    let phone = element.querySelector('.tell-number').innerText.replace(/\s/ig,'')
+  await estatePage.waitForSelector('.house-basic-right');
+  let estateInfo = await estatePage.$eval('.house-basic-right', element => {
+    let name = element.querySelector('.poster-name').innerText
+    let company = element.querySelector('.poster-company-4').innerText
+    let phone = element.querySelector('.phone-num').innerText.replace(/\s/ig,'')
     return {
       name,
       company,
