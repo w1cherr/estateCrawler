@@ -2,11 +2,11 @@ const puppeteer = require('puppeteer');
 const mongoose = require("mongoose");
 const EstateModel = require('./models/estateSchema')
 const db = mongoose.connect('mongodb://localhost:27017/estateInfo')
-const area = '芙蓉区'
+const area = '雨花区'
 const infoSource = '安居客'
-const requstUrl = 'https://cs.sydc.anjuke.com/xzl-zu/furong-p'
-const startPage = 5
-const endPage = 10
+const requstUrl = 'https://cs.sydc.anjuke.com/xzl-zu/changshayuhua-p'
+const startPage = 1
+const endPage = 20
 
 // 随机生成max~min之间整数
 function randNum(max, min) {
@@ -71,12 +71,10 @@ const getEstateInfo = async (url) => {
     let name = element.querySelector('.name').innerText
     let company = element.querySelector('.company a').innerText
     let phone = element.querySelector('.tell-number').innerText.replace(/\s/ig,'')
-    let createTime = new Date()
     return {
       name,
       company,
-      phone,
-      createTime
+      phone
     }
   })
   const estate = await EstateModel.findOne({phone: estateInfo.phone})
@@ -84,9 +82,10 @@ const getEstateInfo = async (url) => {
     estateInfo.area = area
     estateInfo.infoSource = infoSource
     console.log('新增数据', estateInfo);
+    estateInfo.createTime = new Date()
     EstateModel.create(estateInfo)
   } else {
-    console.log('重复数据');
+    console.log('重复数据', estateInfo.phone);
   }
   await browser.close();
 }

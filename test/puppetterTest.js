@@ -22,17 +22,16 @@ const saveScreenshot = async (url) => {
   await page.goto(url);
   console.log('enter');
 
-  await page.waitForSelector('.list-content');
-  const urls = await page.$eval('.list-content', element => {
-    let HTMLCollection = element.querySelectorAll('a.list-item');
+  await page.waitForSelector('#house-list-wrap');
+  let urls = await page.$eval('#house-list-wrap', element => {
+    let HTMLCollection = element.querySelectorAll('li > h2 > a');
     let urlsArray = Array.prototype.slice.call(HTMLCollection);
-    let urls = urlsArray.map(item => {
+    let links = urlsArray.map(item => {
       return item.getAttribute('href')
     });
-    return urls;
+    return links;
   })
   console.log(`书架上共找到${urls.length}本书`);
-  console.log(urls);
 
   // let aTagerList = await page.$('body > div.list-page > div.layout > div.list-content' > a.list-item)
   // console.log(aTagerList);
@@ -53,5 +52,5 @@ module.exports = saveScreenshot;
 
 if (require.main === module) {
   // for test
-  saveScreenshot('https://cs.sydc.anjuke.com/xzl-zu/xingsha-p1/');
+  saveScreenshot('https://cs.58.com/furong/zhaozu/pn5');
 }
